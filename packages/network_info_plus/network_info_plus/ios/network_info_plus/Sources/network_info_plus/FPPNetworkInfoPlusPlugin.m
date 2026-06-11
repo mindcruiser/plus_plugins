@@ -117,6 +117,11 @@
         fetchNetworkInfoWithCompletionHandler:^(FPPNetworkInfo *networkInfo) {
           result(networkInfo.BSSID);
         }];
+  } else if ([call.method isEqualToString:@"wifiSecurityType"]) {
+    [self.networkInfoProvider
+        fetchNetworkInfoWithCompletionHandler:^(FPPNetworkInfo *networkInfo) {
+          result(networkInfo.securityType);
+        }];
   } else if ([call.method isEqualToString:@"wifiIPAddress"]) {
     result([self getWifiIP]);
   } else if ([call.method isEqualToString:@"wifiIPv6Address"]) {

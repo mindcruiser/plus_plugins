@@ -15,7 +15,8 @@
         NSString *ssid = networkInfo[(NSString *)kCNNetworkInfoKeySSID];
         NSString *bssid = networkInfo[(NSString *)kCNNetworkInfoKeyBSSID];
         completionHandler([[FPPNetworkInfo alloc] initWithSSID:ssid
-                                                         BSSID:bssid]);
+                                                         BSSID:bssid
+                                                  securityType:nil]);
         return;
       }
     }
