@@ -15,6 +15,7 @@ internal class NetworkInfoMethodChannelHandler(private val networkInfo: NetworkI
         when (call.method) {
             "wifiName" -> result.success(networkInfo.getWifiName())
             "wifiBSSID" -> result.success(networkInfo.getWifiBSSID())
+            "wifiSecurityType" -> result.success(networkInfo.getWifiSecurityType())
             "wifiIPAddress" -> result.success(networkInfo.getWifiIPAddress())
             "wifiBroadcast" -> result.success(networkInfo.getBroadcastIP())
             "wifiSubmask" -> result.success(networkInfo.getWifiSubnetMask())

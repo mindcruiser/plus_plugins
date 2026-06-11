@@ -6,6 +6,9 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import java.net.*
 
+// Mirrors WifiInfo.SECURITY_TYPE_DPP, which is unavailable in Android 31 stubs.
+private const val SECURITY_TYPE_DPP = 13
+
 /** Reports network info such as wifi name and address. */
 internal class NetworkInfo(
     private val wifiManager: WifiManager,
@@ -21,6 +24,30 @@ internal class NetworkInfo(
     fun getWifiName(): String? = wifiInfo.ssid
 
     fun getWifiBSSID(): String? = wifiInfo.bssid
+
+    fun getWifiSecurityType(): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return null
+        }
+
+        return when (wifiInfo.currentSecurityType) {
+            WifiInfo.SECURITY_TYPE_OPEN -> "open"
+            WifiInfo.SECURITY_TYPE_WEP -> "wep"
+            WifiInfo.SECURITY_TYPE_PSK -> "personal"
+            WifiInfo.SECURITY_TYPE_EAP -> "enterprise"
+            WifiInfo.SECURITY_TYPE_SAE -> "wpa3Personal"
+            WifiInfo.SECURITY_TYPE_OWE -> "owe"
+            WifiInfo.SECURITY_TYPE_WAPI_PSK -> "wapiPsk"
+            WifiInfo.SECURITY_TYPE_WAPI_CERT -> "wapiCert"
+            WifiInfo.SECURITY_TYPE_EAP_WPA3_ENTERPRISE -> "wpa3Enterprise"
+            WifiInfo.SECURITY_TYPE_EAP_WPA3_ENTERPRISE_192_BIT -> "wpa3Enterprise192Bit"
+            WifiInfo.SECURITY_TYPE_PASSPOINT_R1_R2 -> "passpointR1R2"
+            WifiInfo.SECURITY_TYPE_PASSPOINT_R3 -> "passpointR3"
+            SECURITY_TYPE_DPP -> "dpp"
+            WifiInfo.SECURITY_TYPE_UNKNOWN -> "unknown"
+            else -> "unknown"
+        }
+    }
 
     fun getWifiIPAddress(): String? {
         var ipAddress: String? = null
