@@ -48,6 +48,8 @@ public class NetworkInfoPlusPlugin: NSObject, FlutterPlugin {
       result(getWifiBroadcast())
     case "wifiGatewayAddress":
       result(getDefaultGateway())
+    case "wifiSecurityType":
+      result(getWifiSecurityType())
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -107,6 +109,43 @@ public class NetworkInfoPlusPlugin: NSObject, FlutterPlugin {
       }
 
       return result
+    }
+  }
+
+  public func getWifiSecurityType() -> String? {
+    guard let cwinterface = cwinterface else { return nil }
+
+    switch cwinterface.security() {
+    case .none:
+      return "open"
+    case .WEP, .dynamicWEP:
+      return "wep"
+    case .wpaPersonal, .wpaPersonalMixed:
+      return "wpaPersonal"
+    case .wpa2Personal:
+      return "wpa2Personal"
+    case .personal:
+      return "personal"
+    case .wpaEnterprise, .wpaEnterpriseMixed:
+      return "wpaEnterprise"
+    case .wpa2Enterprise:
+      return "wpa2Enterprise"
+    case .enterprise:
+      return "enterprise"
+    case .wpa3Personal:
+      return "wpa3Personal"
+    case .wpa3Enterprise:
+      return "wpa3Enterprise"
+    case .wpa3Transition:
+      return "wpa3Transition"
+    case .OWE:
+      return "owe"
+    case .oweTransition:
+      return "oweTransition"
+    case .unknown:
+      return "unknown"
+    @unknown default:
+      return "unknown"
     }
   }
 }
