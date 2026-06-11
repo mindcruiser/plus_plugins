@@ -4,6 +4,7 @@ library;
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
+import 'package:meta/meta.dart';
 import 'package:network_info_plus/src/windows_structs.dart';
 import 'package:win32/win32.dart';
 import 'package:network_info_plus_platform_interface/network_info_plus_platform_interface.dart';
@@ -19,6 +20,31 @@ class NetworkInfoPlusWindowsPlugin extends NetworkInfoPlatform {
 
   static void registerWith() {
     NetworkInfoPlatform.instance = NetworkInfoPlusWindowsPlugin();
+  }
+
+  @visibleForTesting
+  WifiSecurityType securityTypeFromDot11AuthAlgorithm({
+    required bool securityEnabled,
+    required DOT11_AUTH_ALGORITHM authAlgorithm,
+  }) {
+    if (!securityEnabled) {
+      return WifiSecurityType.open;
+    }
+
+    return switch (authAlgorithm) {
+      DOT11_AUTH_ALGO_80211_OPEN => WifiSecurityType.open,
+      DOT11_AUTH_ALGO_80211_SHARED_KEY => WifiSecurityType.wep,
+      DOT11_AUTH_ALGO_WPA => WifiSecurityType.wpaEnterprise,
+      DOT11_AUTH_ALGO_WPA_PSK => WifiSecurityType.wpaPersonal,
+      DOT11_AUTH_ALGO_RSNA => WifiSecurityType.wpa2Enterprise,
+      DOT11_AUTH_ALGO_RSNA_PSK => WifiSecurityType.wpa2Personal,
+      // DOT11_AUTH_ALGO_WPA3 is an alias for DOT11_AUTH_ALGO_WPA3_ENT_192.
+      DOT11_AUTH_ALGO_WPA3_ENT_192 => WifiSecurityType.wpa3Enterprise192Bit,
+      DOT11_AUTH_ALGO_WPA3_SAE => WifiSecurityType.wpa3Personal,
+      DOT11_AUTH_ALGO_OWE => WifiSecurityType.owe,
+      DOT11_AUTH_ALGO_WPA3_ENT => WifiSecurityType.wpa3Enterprise,
+      _ => WifiSecurityType.unknown,
+    };
   }
 
   void openHandle() {
@@ -353,6 +379,21 @@ class NetworkInfoPlusWindowsPlugin extends NetworkInfoPlatform {
           }
         }
       }),
+    );
+  }
+
+  @override
+  Future<WifiSecurityType?> getWifiSecurityType() {
+    return Future<WifiSecurityType?>.value(
+      wifiSecurityTypeFromString(
+        query((pGuid, pAttributes) {
+          final securityAttributes = pAttributes.ref.wlanSecurityAttributes;
+          return securityTypeFromDot11AuthAlgorithm(
+            securityEnabled: securityAttributes.bSecurityEnabled,
+            authAlgorithm: securityAttributes.dot11AuthAlgorithm,
+          ).name;
+        }),
+      ),
     );
   }
 }

@@ -8,9 +8,9 @@ import 'package:nm/nm.dart';
 // Used internally
 // ignore_for_file: public_member_api_docs
 
-typedef _DeviceGetter = Future<String?> Function(NetworkManagerDevice? device);
-typedef _ConnectionGetter =
-    Future<String?> Function(NetworkManagerActiveConnection? connection);
+typedef _DeviceGetter<T> = Future<T?> Function(NetworkManagerDevice? device);
+typedef _ConnectionGetter<T> =
+    Future<T?> Function(NetworkManagerActiveConnection? connection);
 
 @visibleForTesting
 typedef NetworkManagerClientFactory = NetworkManagerClient Function();
@@ -74,7 +74,24 @@ class NetworkInfoPlusLinuxPlugin extends NetworkInfoPlatform {
     );
   }
 
-  Future<String?> _getDeviceValue(_DeviceGetter getter) {
+  /// Obtains the security type of the connected wifi network.
+  @override
+  Future<WifiSecurityType?> getWifiSecurityType() {
+    return _getDeviceValue((device) async {
+      final activeAccessPoint = device?.wireless?.activeAccessPoint;
+      if (activeAccessPoint == null) {
+        return null;
+      }
+
+      return securityTypeFromNetworkManagerFlags(
+        flags: activeAccessPoint.flags,
+        wpaFlags: activeAccessPoint.wpaFlags,
+        rsnFlags: activeAccessPoint.rsnFlags,
+      );
+    });
+  }
+
+  Future<T?> _getDeviceValue<T>(_DeviceGetter<T> getter) {
     return _getConnectionValue((connection) {
       final device = connection?.devices.firstWhereOrNull(
         (device) => device.wireless != null,
@@ -83,12 +100,14 @@ class NetworkInfoPlusLinuxPlugin extends NetworkInfoPlatform {
     });
   }
 
-  Future<String?> _getConnectionValue(_ConnectionGetter getter) async {
+  Future<T?> _getConnectionValue<T>(_ConnectionGetter<T> getter) async {
     final client = createClient();
     await client.connect();
-    final value = getter(client.primaryConnection);
-    await client.close();
-    return value;
+    try {
+      return await getter(client.primaryConnection);
+    } finally {
+      await client.close();
+    }
   }
 
   String? _getIpAddress(List<Map<String, dynamic>>? data) {
@@ -105,6 +124,58 @@ class NetworkInfoPlusLinuxPlugin extends NetworkInfoPlatform {
     final ip = _getIpAddress(data)?.toIpInt() ?? 0;
     final mask = _getSubnetMask(data)?.toIpInt() ?? 0;
     return (ip | (mask ^ 0xffffffff)).toIpString();
+  }
+
+  @visibleForTesting
+  WifiSecurityType securityTypeFromNetworkManagerFlags({
+    required List<NetworkManagerWifiAccessPointFlag> flags,
+    required List<NetworkManagerWifiAccessPointSecurityFlag> wpaFlags,
+    required List<NetworkManagerWifiAccessPointSecurityFlag> rsnFlags,
+  }) {
+    if (rsnFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagementSae,
+    )) {
+      return WifiSecurityType.wpa3Personal;
+    }
+    if (rsnFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagementOwe,
+    )) {
+      return WifiSecurityType.owe;
+    }
+    if (rsnFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagementOweTm,
+    )) {
+      return WifiSecurityType.oweTransition;
+    }
+    if (rsnFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagement802_1X,
+    )) {
+      return WifiSecurityType.wpa2Enterprise;
+    }
+    if (rsnFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagementPsk,
+    )) {
+      return WifiSecurityType.wpa2Personal;
+    }
+
+    if (wpaFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagement802_1X,
+    )) {
+      return WifiSecurityType.wpaEnterprise;
+    }
+    if (wpaFlags.contains(
+      NetworkManagerWifiAccessPointSecurityFlag.keyManagementPsk,
+    )) {
+      return WifiSecurityType.wpaPersonal;
+    }
+
+    if (wpaFlags.isEmpty && rsnFlags.isEmpty) {
+      return flags.contains(NetworkManagerWifiAccessPointFlag.privacy)
+          ? WifiSecurityType.wep
+          : WifiSecurityType.open;
+    }
+
+    return WifiSecurityType.unknown;
   }
 
   @visibleForTesting
