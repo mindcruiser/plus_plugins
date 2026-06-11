@@ -17,6 +17,10 @@ themselves accordingly.
 
 The functionality is not supported on Web.
 
+Linux Wi-Fi security type detection is best effort because NetworkManager
+exposes access point capability flags rather than a single current-connection
+security type.
+
 ## Requirements
 
 - Flutter >=3.38.1
@@ -44,7 +48,26 @@ final wifiIPv6 = await info.getWifiIPv6(); // 2001:0db8:85a3:0000:0000:8a2e:0370
 final wifiSubmask = await info.getWifiSubmask(); // 255.255.255.0
 final wifiBroadcast = await info.getWifiBroadcast(); // 192.168.1.255
 final wifiGateway = await info.getWifiGatewayIP(); // 192.168.1.1
+final wifiSecurityType = await info.getWifiSecurityType(); // WifiSecurityType.wpa3Personal
+final isWifiSecure = await info.isWifiSecure(); // true
 ```
+
+### Wi-Fi security type
+
+`getWifiSecurityType()` returns a normalized `WifiSecurityType` when the
+current platform can identify the active Wi-Fi security type.
+
+It returns `null` when there is no current Wi-Fi connection, when the operating
+system does not expose the value, or when required permissions or entitlements
+are missing. It returns `WifiSecurityType.unknown` when the platform reports a
+Wi-Fi connection but cannot identify the security type. When the type is
+identified, it returns the concrete enum value.
+
+`isWifiSecure()` derives its result from `getWifiSecurityType()`. It returns
+`false` for open networks, `true` for known non-open networks, and `null` when
+the security type is `null` or `WifiSecurityType.unknown`. A `true` result only
+means that the network is not open; it does not mean the network uses modern or
+recommended security.
 
 ### Device permissions
 
@@ -61,6 +84,9 @@ These double quotes are added by the operating system, but only when the origina
 quotes already. The plugin will always return the Wi-Fi name as provided by the OS.
 
 This is a known limitation, do not create bug reports about this.
+
+Android 12 (API level 31) and newer support Wi-Fi security type detection.
+Older Android versions return `null` for Wi-Fi security type.
 
 #### Permissions on Android
 
@@ -142,6 +168,13 @@ This entitlement can be configured in xcode with the name "Access Wi-Fi informat
 **this entitlement is only possible when using a professional development team** and not a "Personal development team".
 
 Without complying with these conditions, the calls to `.getWifiBSSID()` and `.getWifiName()` will return null.
+
+#### iOS 15
+
+Starting on iOS 15, Wi-Fi security type detection uses
+`NEHotspotNetwork.securityType`. It has the same permission and entitlement
+requirements as SSID and BSSID access. iOS 14 and older return `null` for
+Wi-Fi security type.
 
 ## Learn more
 

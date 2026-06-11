@@ -95,7 +95,9 @@ class _MyHomePageState extends State<MyHomePage> {
         wifiIPv6,
         wifiGatewayIP,
         wifiBroadcast,
-        wifiSubmask;
+        wifiSubmask,
+        wifiSecurityType,
+        wifiIsSecure;
 
     try {
       if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
@@ -166,6 +168,26 @@ class _MyHomePageState extends State<MyHomePage> {
       wifiGatewayIP = 'Failed to get Wifi gateway address';
     }
 
+    try {
+      wifiSecurityType = (await _networkInfo.getWifiSecurityType())?.name;
+    } on PlatformException catch (e) {
+      developer.log('Failed to get Wifi security type', error: e);
+      wifiSecurityType = 'Failed to get Wifi security type';
+    } on UnsupportedError catch (e) {
+      developer.log('Failed to get Wifi security type', error: e);
+      wifiSecurityType = 'Unsupported to get Wifi security type';
+    }
+
+    try {
+      wifiIsSecure = (await _networkInfo.isWifiSecure())?.toString();
+    } on PlatformException catch (e) {
+      developer.log('Failed to get Wifi secure state', error: e);
+      wifiIsSecure = 'Failed to get Wifi secure state';
+    } on UnsupportedError catch (e) {
+      developer.log('Failed to get Wifi secure state', error: e);
+      wifiIsSecure = 'Unsupported to get Wifi secure state';
+    }
+
     setState(() {
       _connectionStatus = 'Wifi Name: $wifiName\n'
           'Wifi BSSID: $wifiBSSID\n'
@@ -173,7 +195,9 @@ class _MyHomePageState extends State<MyHomePage> {
           'Wifi IPv6: $wifiIPv6\n'
           'Wifi Broadcast: $wifiBroadcast\n'
           'Wifi Gateway: $wifiGatewayIP\n'
-          'Wifi Submask: $wifiSubmask\n';
+          'Wifi Submask: $wifiSubmask\n'
+          'Wifi Security Type: $wifiSecurityType\n'
+          'Wifi Is Secure: $wifiIsSecure\n';
     });
   }
 }
