@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'method_channel_network_info.dart';
+import 'src/enums.dart';
 
 export 'src/enums.dart';
 
@@ -70,5 +71,10 @@ abstract class NetworkInfoPlatform extends PlatformInterface {
   /// Obtains the broadcast of the connected wifi network
   Future<String?> getWifiBroadcast() {
     throw UnimplementedError('getWifiBroadcast() has not been implemented.');
+  }
+
+  /// Obtains the security type of the connected wifi network.
+  Future<WifiSecurityType?> getWifiSecurityType() {
+    throw UnimplementedError('getWifiSecurityType() has not been implemented.');
   }
 }

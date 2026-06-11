@@ -56,4 +56,12 @@ class MethodChannelNetworkInfo extends NetworkInfoPlatform {
   Future<String?> getWifiBroadcast() {
     return methodChannel.invokeMethod<String>('wifiBroadcast');
   }
+
+  @override
+  Future<WifiSecurityType?> getWifiSecurityType() async {
+    final securityType = await methodChannel.invokeMethod<String>(
+      'wifiSecurityType',
+    );
+    return wifiSecurityTypeFromString(securityType);
+  }
 }

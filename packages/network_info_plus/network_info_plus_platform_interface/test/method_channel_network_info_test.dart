@@ -5,6 +5,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_info_plus_platform_interface/method_channel_network_info.dart';
+import 'package:network_info_plus_platform_interface/network_info_plus_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -89,6 +90,43 @@ void main() {
       final result = await methodChannelNetworkInfo.getWifiSubmask();
       expect(result, '255.255.255.0');
       expect(log, <Matcher>[isMethodCall('wifiSubmask', arguments: null)]);
+    });
+
+    test('getWifiSecurityType returns parsed security type', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(methodChannelNetworkInfo.methodChannel, (
+            MethodCall methodCall,
+          ) async {
+            log.add(methodCall);
+            return 'wpa3Personal';
+          });
+
+      final result = await methodChannelNetworkInfo.getWifiSecurityType();
+
+      expect(result, WifiSecurityType.wpa3Personal);
+      expect(log, <Matcher>[isMethodCall('wifiSecurityType', arguments: null)]);
+    });
+
+    test('getWifiSecurityType maps unknown strings to unknown', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(methodChannelNetworkInfo.methodChannel, (
+            MethodCall methodCall,
+          ) async {
+            log.add(methodCall);
+            return 'wpa4Personal';
+          });
+
+      final result = await methodChannelNetworkInfo.getWifiSecurityType();
+
+      expect(result, WifiSecurityType.unknown);
+      expect(log, <Matcher>[isMethodCall('wifiSecurityType', arguments: null)]);
+    });
+
+    test('getWifiSecurityType returns null for platform null', () async {
+      final result = await methodChannelNetworkInfo.getWifiSecurityType();
+
+      expect(result, isNull);
+      expect(log, <Matcher>[isMethodCall('wifiSecurityType', arguments: null)]);
     });
   });
 }
