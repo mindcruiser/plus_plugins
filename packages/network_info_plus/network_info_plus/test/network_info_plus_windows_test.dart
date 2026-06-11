@@ -39,11 +39,7 @@ void main() {
     final plugin = NetworkInfoPlusWindowsPlugin();
     final cases =
         <
-          ({
-            bool securityEnabled,
-            DOT11_AUTH_ALGORITHM authAlgorithm,
-            WifiSecurityType expected,
-          })
+          ({bool securityEnabled, int authAlgorithm, WifiSecurityType expected})
         >[
           (
             securityEnabled: false,
@@ -107,7 +103,7 @@ void main() {
           ),
           (
             securityEnabled: true,
-            authAlgorithm: DOT11_AUTH_ALGORITHM(9999),
+            authAlgorithm: 9999,
             expected: WifiSecurityType.unknown,
           ),
         ];
