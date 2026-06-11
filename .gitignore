@@ -53,6 +53,7 @@ build/
 /.fvm
 
 .melos_tool/
+.superpowers/
 **/*.env
 
 lcov.info
