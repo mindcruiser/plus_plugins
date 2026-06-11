@@ -15,6 +15,7 @@ const String kWifiIpV6 = '2002:7f00:0001:0:0:0:0:0';
 const String kWifiBroadcast = '127.0.0.255';
 const String kWifiGatewayIP = '127.0.0.0';
 const String kWifiSubmask = '255.255.255.0';
+const WifiSecurityType kWifiSecurityTypeResult = WifiSecurityType.wpa3Personal;
 const LocationAuthorizationStatus kRequestLocationResult =
     LocationAuthorizationStatus.authorizedAlways;
 const LocationAuthorizationStatus kGetLocationResult =
@@ -23,7 +24,7 @@ const LocationAuthorizationStatus kGetLocationResult =
 void main() {
   group('NetworkInfo', () {
     late NetworkInfo networkInfo;
-    MockNetworkInfoPlatform fakePlatform;
+    late MockNetworkInfoPlatform fakePlatform;
     setUp(() async {
       fakePlatform = MockNetworkInfoPlatform();
       NetworkInfoPlatform.instance = fakePlatform;
@@ -64,12 +65,54 @@ void main() {
       final result = await networkInfo.getWifiGatewayIP();
       expect(result, kWifiGatewayIP);
     });
+
+    test('getWifiSecurityType delegates to platform', () async {
+      final result = await networkInfo.getWifiSecurityType();
+      expect(result, kWifiSecurityTypeResult);
+    });
+
+    test('isWifiSecure returns false for open security', () async {
+      fakePlatform.wifiSecurityType = WifiSecurityType.open;
+
+      final result = await networkInfo.isWifiSecure();
+
+      expect(result, isFalse);
+    });
+
+    test('isWifiSecure returns true for known non-open security', () async {
+      fakePlatform.wifiSecurityType = WifiSecurityType.wpa3Personal;
+
+      final result = await networkInfo.isWifiSecure();
+
+      expect(result, isTrue);
+    });
+
+    test('isWifiSecure returns null for unknown security', () async {
+      fakePlatform.wifiSecurityType = WifiSecurityType.unknown;
+
+      final result = await networkInfo.isWifiSecure();
+
+      expect(result, isNull);
+    });
+
+    test(
+      'isWifiSecure returns null when security type is unavailable',
+      () async {
+        fakePlatform.wifiSecurityType = null;
+
+        final result = await networkInfo.isWifiSecure();
+
+        expect(result, isNull);
+      },
+    );
   });
 }
 
 class MockNetworkInfoPlatform extends Mock
     with MockPlatformInterfaceMixin
     implements NetworkInfoPlatform {
+  WifiSecurityType? wifiSecurityType = kWifiSecurityTypeResult;
+
   @override
   Future<String> getWifiName() async {
     return kWifiNameResult;
@@ -103,5 +146,10 @@ class MockNetworkInfoPlatform extends Mock
   @override
   Future<String> getWifiIP() async {
     return kWifiIpAddressResult;
+  }
+
+  @override
+  Future<WifiSecurityType?> getWifiSecurityType() async {
+    return wifiSecurityType;
   }
 }

@@ -26,4 +26,10 @@ class NetworkInfoPlusWebPlugin extends NetworkInfoPlatform {
   Future<String?> getWifiIP() {
     throw UnsupportedError('getWifiIP() is not supported on Web.');
   }
+
+  /// Obtains the security type of the connected wifi network.
+  @override
+  Future<WifiSecurityType?> getWifiSecurityType() {
+    throw UnsupportedError('getWifiSecurityType() is not supported on Web.');
+  }
 }

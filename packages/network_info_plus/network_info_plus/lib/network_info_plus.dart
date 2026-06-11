@@ -8,7 +8,7 @@ import 'package:network_info_plus_platform_interface/network_info_plus_platform_
 
 // Export enums from the platform_interface so plugin users can use them directly.
 export 'package:network_info_plus_platform_interface/network_info_plus_platform_interface.dart'
-    show LocationAuthorizationStatus;
+    show LocationAuthorizationStatus, WifiSecurityType;
 
 export 'src/network_info_plus_linux.dart';
 export 'src/network_info_plus_windows.dart'
@@ -81,5 +81,20 @@ class NetworkInfo {
   /// Obtains the broadcast of the connected wifi network
   Future<String?> getWifiBroadcast() {
     return _platform.getWifiBroadcast();
+  }
+
+  /// Obtains the security type of the connected wifi network.
+  Future<WifiSecurityType?> getWifiSecurityType() {
+    return _platform.getWifiSecurityType();
+  }
+
+  /// Returns whether the connected wifi network is secure.
+  Future<bool?> isWifiSecure() async {
+    final securityType = await getWifiSecurityType();
+    return switch (securityType) {
+      null || WifiSecurityType.unknown => null,
+      WifiSecurityType.open => false,
+      _ => true,
+    };
   }
 }
