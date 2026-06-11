@@ -52,6 +52,11 @@ void main() {
           ),
           (
             securityEnabled: true,
+            authAlgorithm: DOT11_AUTH_ALGO_80211_OPEN,
+            expected: WifiSecurityType.wep,
+          ),
+          (
+            securityEnabled: true,
             authAlgorithm: DOT11_AUTH_ALGO_80211_SHARED_KEY,
             expected: WifiSecurityType.wep,
           ),

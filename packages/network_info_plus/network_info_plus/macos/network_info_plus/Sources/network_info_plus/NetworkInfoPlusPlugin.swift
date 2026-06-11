@@ -68,40 +68,43 @@ public class NetworkInfoPlusPlugin: NSObject, FlutterPlugin {
   }
 
   public func getDefaultGateway() -> String? {
-    var mib : [Int32] = [CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_GATEWAY];
-    var l : Int = 0
+    var mib: [Int32] = [CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_FLAGS, RTF_GATEWAY]
+    var l: Int = 0
     guard sysctl(&mib, UInt32(mib.count), nil, &l, nil, 0) == 0 else { return nil }
 
     var buf = [UInt8](repeating: 0, count: l)
     guard sysctl(&mib, UInt32(mib.count), &buf, &l, nil, 0) == 0 else { return nil }
 
     return buf.withUnsafeBytes { buf in
-      var result : String?
+      var result: String?
 
-      var sa_tab = [UnsafePointer<sockaddr>?](repeating: nil, count: Int(RTAX_MAX))
+      var saTab = [UnsafePointer<sockaddr>?](repeating: nil, count: Int(RTAX_MAX))
 
       var p = buf.baseAddress!
       while p < buf.baseAddress! + l {
         let rt = p.bindMemory(to: rt_msghdr.self, capacity: 1)
-        var sa = (UnsafeRawPointer(rt) + Int(MemoryLayout<rt_msghdr>.stride)).bindMemory(to: sockaddr.self, capacity: 1)
+        var sa = (UnsafeRawPointer(rt) + Int(MemoryLayout<rt_msghdr>.stride)).bindMemory(
+          to: sockaddr.self, capacity: 1)
 
         for i in 0..<Int(RTAX_MAX) {
           if rt.pointee.rtm_addrs & (1 << i) != 0 {
-            sa_tab[i] = sa
-            sa = (UnsafeRawPointer(sa) + roundup(Int(sa.pointee.sa_len))).bindMemory(to: sockaddr.self, capacity: 1)
+            saTab[i] = sa
+            sa = (UnsafeRawPointer(sa) + roundup(Int(sa.pointee.sa_len))).bindMemory(
+              to: sockaddr.self, capacity: 1)
           } else {
-            sa_tab[i] = nil
+            saTab[i] = nil
           }
         }
 
         if rt.pointee.rtm_addrs & (RTA_DST | RTA_GATEWAY) == (RTA_DST | RTA_GATEWAY),
-           let sa_dst = sa_tab[Int(RTAX_DST)], let sa_gateway = sa_tab[Int(RTAX_GATEWAY)],
-           sa_dst.pointee.sa_family == AF_INET && sa_gateway.pointee.sa_family == AF_INET {
+          let saDst = saTab[Int(RTAX_DST)], let saGateway = saTab[Int(RTAX_GATEWAY)],
+          saDst.pointee.sa_family == AF_INET && saGateway.pointee.sa_family == AF_INET
+        {
 
           var ifname = [CChar](repeating: 0, count: 128)
           if_indextoname(UInt32(rt.pointee.rtm_index), &ifname)
           if String(cString: ifname) == "en0" {
-            result = descriptionForAddress(sa_gateway)
+            result = descriptionForAddress(saGateway)
           }
         }
 
@@ -159,11 +162,12 @@ public class NetworkInfoPlusPlugin: NSObject, FlutterPlugin {
 /// duration of the closure's execution.
 /// - returns: The result of last call to `body` or `nil` if there was no `en0`
 /// interface found.
-func withWifiInterface<R>(family: Int32, body: (UnsafePointer<ifaddrs>) throws -> R) rethrows -> R? {
-  var result : R?
+func withWifiInterface<R>(family: Int32, body: (UnsafePointer<ifaddrs>) throws -> R) rethrows -> R?
+{
+  var result: R?
 
   // Get list of all interfaces on the local machine:
-  var ifaddr : UnsafeMutablePointer<ifaddrs>?
+  var ifaddr: UnsafeMutablePointer<ifaddrs>?
   guard getifaddrs(&ifaddr) == 0 else { return nil }
   guard let firstAddr = ifaddr else { return nil }
 
@@ -179,7 +183,7 @@ func withWifiInterface<R>(family: Int32, body: (UnsafePointer<ifaddrs>) throws -
 
       // Check interface name:
       let name = String(cString: interface.ifa_name)
-      if  name == "en0" {
+      if name == "en0" {
 
         result = try body(ifptr)
       }
@@ -189,11 +193,12 @@ func withWifiInterface<R>(family: Int32, body: (UnsafePointer<ifaddrs>) throws -
   return result
 }
 
-private func descriptionForAddress(_ addr : UnsafePointer<sockaddr>) -> String{
+private func descriptionForAddress(_ addr: UnsafePointer<sockaddr>) -> String {
   var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-  getnameinfo(addr, socklen_t(addr.pointee.sa_len),
-              &hostname, socklen_t(hostname.count),
-              nil, socklen_t(0), NI_NUMERICHOST)
+  getnameinfo(
+    addr, socklen_t(addr.pointee.sa_len),
+    &hostname, socklen_t(hostname.count),
+    nil, socklen_t(0), NI_NUMERICHOST)
   return String(cString: hostname)
 }
 

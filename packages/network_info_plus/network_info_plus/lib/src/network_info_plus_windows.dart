@@ -32,7 +32,7 @@ class NetworkInfoPlusWindowsPlugin extends NetworkInfoPlatform {
     }
 
     return switch (authAlgorithm) {
-      DOT11_AUTH_ALGO_80211_OPEN => WifiSecurityType.open,
+      DOT11_AUTH_ALGO_80211_OPEN => WifiSecurityType.wep,
       DOT11_AUTH_ALGO_80211_SHARED_KEY => WifiSecurityType.wep,
       DOT11_AUTH_ALGO_WPA => WifiSecurityType.wpaEnterprise,
       DOT11_AUTH_ALGO_WPA_PSK => WifiSecurityType.wpaPersonal,

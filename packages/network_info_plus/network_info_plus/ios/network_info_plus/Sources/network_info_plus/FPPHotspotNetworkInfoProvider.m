@@ -3,19 +3,20 @@
 
 @implementation FPPHotspotNetworkInfoProvider
 
-static NSString *FPPStringFromHotspotSecurityType(
-    NEHotspotNetworkSecurityType securityType) API_AVAILABLE(ios(15.0)) {
+static NSString *
+FPPStringFromHotspotSecurityType(NEHotspotNetworkSecurityType securityType)
+    API_AVAILABLE(ios(15.0)) {
   switch (securityType) {
-    case NEHotspotNetworkSecurityTypeOpen:
-      return @"open";
-    case NEHotspotNetworkSecurityTypeWEP:
-      return @"wep";
-    case NEHotspotNetworkSecurityTypePersonal:
-      return @"personal";
-    case NEHotspotNetworkSecurityTypeEnterprise:
-      return @"enterprise";
-    case NEHotspotNetworkSecurityTypeUnknown:
-      return @"unknown";
+  case NEHotspotNetworkSecurityTypeOpen:
+    return @"open";
+  case NEHotspotNetworkSecurityTypeWEP:
+    return @"wep";
+  case NEHotspotNetworkSecurityTypePersonal:
+    return @"personal";
+  case NEHotspotNetworkSecurityTypeEnterprise:
+    return @"enterprise";
+  case NEHotspotNetworkSecurityTypeUnknown:
+    return @"unknown";
   }
 
   return @"unknown";
@@ -30,13 +31,11 @@ static NSString *FPPStringFromHotspotSecurityType(
       if (network) {
         NSString *securityType = nil;
         if (@available(iOS 15.0, *)) {
-          securityType =
-              FPPStringFromHotspotSecurityType(network.securityType);
+          securityType = FPPStringFromHotspotSecurityType(network.securityType);
         }
-        completionHandler([[FPPNetworkInfo alloc]
-              initWithSSID:network.SSID
-                     BSSID:network.BSSID
-              securityType:securityType]);
+        completionHandler([[FPPNetworkInfo alloc] initWithSSID:network.SSID
+                                                         BSSID:network.BSSID
+                                                  securityType:securityType]);
         return;
       }
       completionHandler(nil);
