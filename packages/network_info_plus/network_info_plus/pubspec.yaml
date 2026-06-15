@@ -39,7 +39,11 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   meta: ^1.17.0
-  network_info_plus_platform_interface: ^3.2.0
+  network_info_plus_platform_interface:
+    git:
+      url: https://github.com/mindcruiser/plus_plugins.git
+      ref: feature/network-info-security-type
+      path: packages/network_info_plus/network_info_plus_platform_interface
   nm: ^0.5.0
   win32: ^5.14.0
 
