@@ -1,6 +1,16 @@
-## 8.2.0
+## 8.3.0
 
  - **FEAT**(network_info_plus): Add Wi-Fi security type APIs.
+
+## 8.2.1
+
+ - **FIX**(network_info_plus): raise Apple platform minimums in SPM manifests to match FlutterFramework ([#3921](https://github.com/fluttercommunity/plus_plugins/issues/3921)). ([aac885da](https://github.com/fluttercommunity/plus_plugins/commit/aac885da24a61b7ce97d693cfccf0ce86c84872d))
+
+## 8.2.0
+
+ - **REFACTOR**(network_info_plus): Change Android Gradle part from Groovy to Kotlin ([#3861](https://github.com/fluttercommunity/plus_plugins/issues/3861)). ([052ec359](https://github.com/fluttercommunity/plus_plugins/commit/052ec359128971cb1710c6ab834c21c4c9f361da))
+ - **FEAT**(network_info_plus): Updated Swift Package Manager setup for Flutter 3.44 ([#3908](https://github.com/fluttercommunity/plus_plugins/issues/3908)). ([56ff0896](https://github.com/fluttercommunity/plus_plugins/commit/56ff0896fcd33f3d39de769e832dddbb75e996b8))
+ - **FEAT**(network_info_plus): Add support of built-in Kotlin ([#3895](https://github.com/fluttercommunity/plus_plugins/issues/3895)). ([ca838b53](https://github.com/fluttercommunity/plus_plugins/commit/ca838b53ae67965245e408d3060390ad98945d9a))
 
 ## 8.1.0
 

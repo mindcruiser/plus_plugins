@@ -4,24 +4,28 @@
 import PackageDescription
 
 let package = Package(
-  name: "network_info_plus",
-  platforms: [
-    .iOS("12.0")
-  ],
-  products: [
-    .library(name: "network-info-plus", targets: ["network_info_plus"])
-  ],
-  dependencies: [],
-  targets: [
-    .target(
-      name: "network_info_plus",
-      dependencies: [],
-      resources: [
-        .process("PrivacyInfo.xcprivacy")
-      ],
-      cSettings: [
-        .headerSearchPath("include/network_info_plus")
-      ]
-    )
-  ]
+    name: "network_info_plus",
+    platforms: [
+        .iOS("13.0"),
+    ],
+    products: [
+        .library(name: "network-info-plus", targets: ["network_info_plus"])
+    ],
+    dependencies: [
+        .package(name: "FlutterFramework", path: "../FlutterFramework")
+    ],
+    targets: [
+        .target(
+            name: "network_info_plus",
+            dependencies: [
+                .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
+            resources: [
+                .process("PrivacyInfo.xcprivacy"),
+            ],
+            cSettings: [
+                .headerSearchPath("include/network_info_plus")
+            ]
+        )
+    ]
 )
